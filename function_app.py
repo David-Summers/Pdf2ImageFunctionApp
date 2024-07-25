@@ -11,10 +11,6 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    # url =  'https://todelpythonipload.blob.core.windows.net/upload/Combined-MC_CoE_SCAN_POS_20240311_001%20(1).pdf?sp=r&st=2024-07-24T23:32:37Z&se=2025-07-25T07:32:37Z&spr=https&sv=2022-11-02&sr=b&sig=Iq%2FWp1jgG%2FsRHUK%2FAvLUpvxFV1ZQddGNB2YukGPSmdU%3D'
-    # CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=todelpythonipload;AccountKey=jrhJ9j83zIoxm8/QrNbKBN9XrHs7KzRGtX24R9iM2xS1ddmwbRVuWd3eJ+XZ5v6kp3Zejfgb+Bcx+AStgIzydg==;EndpointSuffix=core.windows.net"
-    # CONTAINER_NAME = "images"
-
     # Extract parameters from query
     url = req.params.get('url')
     CONNECTION_STRING = req.params.get('connectionString')
