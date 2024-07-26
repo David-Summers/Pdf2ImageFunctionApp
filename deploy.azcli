@@ -1,6 +1,0 @@
-az group create --name todelpythonfunc --location australiaeast
-az deployment group create --resource-group todelpythonfunc --template-file createinfra.bicep
-az acr login --name pythonfunc
-docker build -t pythonfunc.azurecr.io/pythonfunc:latest .
-docker push pythonfunc.azurecr.io/pythonfunc:latest
-
