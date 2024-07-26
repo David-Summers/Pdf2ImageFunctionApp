@@ -1,7 +1,7 @@
-uniqueStr="pdf2img"
+uniqueStr="omniconverter001"
 resourceGroupName="gen${uniqueStr}rg"
 
-az group create --name $resourceGroupName --location australiaeast
+az group create --name $resourceGroupName --location australiaeast --tags "Owner"="David Summers"
 az deployment group create --resource-group $resourceGroupName --template-file createACR.bicep --parameters uniqueStr=${uniqueStr}
 az acr login --name ${uniqueStr}acr
 docker build -t ${uniqueStr}acr.azurecr.io/pythonfunc:latest .
