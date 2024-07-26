@@ -1,0 +1,11 @@
+uniqueStr="pdf2img"
+resourceGroupName="gen${uniqueStr}rg"
+
+az group create --name $resourceGroupName --location australiaeast
+az deployment group create --resource-group $resourceGroupName --template-file createACR.bicep --parameters uniqueStr=${uniqueStr}
+az acr login --name ${uniqueStr}acr
+docker build -t ${uniqueStr}acr.azurecr.io/pythonfunc:latest .
+docker push ${uniqueStr}acr.azurecr.io/pythonfunc:latest
+az deployment group create --resource-group $resourceGroupName --template-file createInfra.bicep --parameters uniqueStr=${uniqueStr}
+
+az functionapp config container set --name ${uniqueStr}app -g $resourceGroupName --image pdf2imgacr.azurecr.io/pythonfunc:latest -r https://pdf2imgacr.azurecr.io
