@@ -3,6 +3,7 @@
 import azure.functions as func
 import logging
 
+from azure.storage.blob import BlobServiceClient, ContainerClient
 from process import process_file
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
@@ -32,6 +33,23 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
             "Missing required parameters: url, connectionString, containerName",
             status_code=400
         )
+
+    # Create the container in Blob Storage if it doesn't exist
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(CONNECTION_STRING)
+        container_client = blob_service_client.get_container_client(CONTAINER_NAME)
+        if not container_client.exists():
+            container_client.create_container()
+            logging.info(f"Container '{CONTAINER_NAME}' created.")
+        else:
+            logging.info(f"Container '{CONTAINER_NAME}' already exists.")
+    except Exception as e:
+        logging.error(f"Error creating container: {e}")
+        return func.HttpResponse(
+            f"Error creating container: {e}",
+            status_code=500
+        )
+
 
     try:
         process_file(url, CONTAINER_NAME, CONNECTION_STRING)
