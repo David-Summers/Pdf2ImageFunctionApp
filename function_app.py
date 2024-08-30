@@ -18,16 +18,27 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
     try:
         req_body = req.get_json()
     except ValueError:
-        pass
-    else:
-        url = url or req_body.get('url')
-        CONNECTION_STRING = CONNECTION_STRING or req_body.get('connectionString')
-        CONTAINER_NAME = CONTAINER_NAME or req_body.get('containerName')
+        req_body = {}
+    
+    url = url or req_body.get('url')
+    CONNECTION_STRING = CONNECTION_STRING or req_body.get('connectionString')
+    CONTAINER_NAME = CONTAINER_NAME or req_body.get('containerName')
 
     # Validate required parameters
     if not all([url, CONNECTION_STRING, CONTAINER_NAME]):
         return func.HttpResponse(
             "Missing required parameters: url, connectionString, containerName",
+            status_code=400
+        )
+
+    # Ensure connection string is a string
+    if isinstance(CONNECTION_STRING, dict):
+        CONNECTION_STRING = CONNECTION_STRING.get('WebUrl', '')
+
+    # Validate that CONNECTION_STRING is now a string
+    if not isinstance(CONNECTION_STRING, str):
+        return func.HttpResponse(
+            "Invalid connectionString parameter format.",
             status_code=400
         )
 
@@ -51,7 +62,9 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     try:
-        process_file(url, CONTAINER_NAME, CONNECTION_STRING)
+        # Attempt to process the file
+        result = process_file(url, CONTAINER_NAME, CONNECTION_STRING)
+        logging.info(f"Processing result: {result}")
 
         return func.HttpResponse(
             "This HTTP triggered function executed successfully.",
@@ -59,7 +72,9 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
         )
     except Exception as e:
         logging.error(f"Error processing file: {e}")
+        # Additional logging for debugging
+        logging.error(f"URL: {url}, Container: {CONTAINER_NAME}, Connection String: {CONNECTION_STRING}")
         return func.HttpResponse(
-            "An error occurred processing your request.",
+            f"An error occurred processing your request: {e}",
             status_code=500
         )
