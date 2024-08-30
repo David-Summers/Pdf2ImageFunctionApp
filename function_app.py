@@ -1,8 +1,5 @@
-
-
 import azure.functions as func
 import logging
-
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from process import process_file
 
@@ -21,11 +18,11 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
     try:
         req_body = req.get_json()
     except ValueError:
-        pass
-    else:
-        url = url or req_body.get('url')
-        CONNECTION_STRING = CONNECTION_STRING or req_body.get('connectionString')
-        CONTAINER_NAME = CONTAINER_NAME or req_body.get('containerName')
+        req_body = {}
+    
+    url = url or req_body.get('url')
+    CONNECTION_STRING = CONNECTION_STRING or req_body.get('connectionString')
+    CONTAINER_NAME = CONTAINER_NAME or req_body.get('containerName')
 
     # Validate required parameters
     if not all([url, CONNECTION_STRING, CONTAINER_NAME]):
@@ -33,6 +30,20 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
             "Missing required parameters: url, connectionString, containerName",
             status_code=400
         )
+
+    # Ensure connection string is a string
+    if isinstance(CONNECTION_STRING, dict):
+        CONNECTION_STRING = CONNECTION_STRING.get('WebUrl', '')
+
+    # Validate that CONNECTION_STRING is now a string
+    if not isinstance(CONNECTION_STRING, str):
+        return func.HttpResponse(
+            "Invalid connectionString parameter format.",
+            status_code=400
+        )
+
+    # Convert CONTAINER_NAME to lowercase
+    CONTAINER_NAME = CONTAINER_NAME.lower()
 
     # Create the container in Blob Storage if it doesn't exist
     try:
@@ -50,17 +61,16 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500
         )
 
-
     try:
         process_file(url, CONTAINER_NAME, CONNECTION_STRING)
 
         return func.HttpResponse(
             "This HTTP triggered function executed successfully.",
-            status_code=200)
+            status_code=200
+        )
     except Exception as e:
+        logging.error(f"Error processing file: {e}")
         return func.HttpResponse(
             "An error occurred processing your request.",
             status_code=500
         )
-    
-    
