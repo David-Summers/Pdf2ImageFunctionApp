@@ -18,27 +18,16 @@ def ProcessPDF(req: func.HttpRequest) -> func.HttpResponse:
     try:
         req_body = req.get_json()
     except ValueError:
-        req_body = {}
-    
-    url = url or req_body.get('url')
-    CONNECTION_STRING = CONNECTION_STRING or req_body.get('connectionString')
-    CONTAINER_NAME = CONTAINER_NAME or req_body.get('containerName')
+        pass
+    else:
+        url = url or req_body.get('url')
+        CONNECTION_STRING = CONNECTION_STRING or req_body.get('connectionString')
+        CONTAINER_NAME = CONTAINER_NAME or req_body.get('containerName')
 
     # Validate required parameters
     if not all([url, CONNECTION_STRING, CONTAINER_NAME]):
         return func.HttpResponse(
             "Missing required parameters: url, connectionString, containerName",
-            status_code=400
-        )
-
-    # Ensure connection string is a string
-    if isinstance(CONNECTION_STRING, dict):
-        CONNECTION_STRING = CONNECTION_STRING.get('WebUrl', '')
-
-    # Validate that CONNECTION_STRING is now a string
-    if not isinstance(CONNECTION_STRING, str):
-        return func.HttpResponse(
-            "Invalid connectionString parameter format.",
             status_code=400
         )
 
