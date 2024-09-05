@@ -43,9 +43,18 @@ def upload_images_to_blob(images, container_name, connection_string):
 
 def process_file(url, image_container_name, image_connection_string):
 
-    response = requests.get(url)
-    images = pdf2image.convert_from_bytes(response.content)
-    
+    CONTAINER_NAME = "upload"
+    blob_name = url.split("/").pop()
 
-    
+    blob_service_client = BlobServiceClient.from_connection_string(image_connection_string)
+    blob_client = blob_service_client.get_blob_client(container = CONTAINER_NAME, blob = blob_name)
+    blob_data = blob_client.download_blob()
+    pdf_stream = blob_data.content_as_bytes()
+
+    images = pdf2image.convert_from_bytes(pdf_stream)
+
     upload_images_to_blob(images, image_container_name, image_connection_string)
+
+
+
+

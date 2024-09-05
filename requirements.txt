@@ -6,3 +6,5 @@ azure-functions
 requests
 pdf2image
 azure-storage-blob
+poppler-utils
+
