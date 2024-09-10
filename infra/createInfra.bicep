@@ -1,14 +1,15 @@
-@minLength(5)
-param uniqueStr string
+param containerRegistryName string
+param functionAppName string
+param storageAccountName string
+param appServicePlanName string
 
 // Reference to the existing ACR
 resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
-  name: '${uniqueStr}acr' 
+  name: containerRegistryName
 }
 
-
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
-  name: '${uniqueStr}app' // 
+  name: functionAppName
   location: resourceGroup().location
   kind: 'functionapp'
   identity: {
@@ -26,21 +27,9 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
           name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
           value: 'false'
         }
-        // {
-        //   name: 'DOCKER_REGISTRY_SERVER_URL'
-        //   value: 'https://${acr.name}.azurecr.io'
-        // }
-        // {
-        //   name: 'DOCKER_REGISTRY_SERVER_USERNAME'
-        //   value: acr.listCredentials().username
-        // }
-        // {
-        //   name: 'DOCKER_ENABLE_CI'
-        //   value: 'true'
-        // }
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listKeys(storageAccount.id,'2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${listKeys(storageAccount.id, '2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
         }
       ]
       alwaysOn: true
@@ -54,7 +43,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
 }
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: '${uniqueStr}asp' // Replace with your App Service Plan name
+  name: appServicePlanName
   location: resourceGroup().location
   sku: {
     name: 'S1'
@@ -66,7 +55,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
-  name: '${uniqueStr}appsa'
+  name: storageAccountName
   location: resourceGroup().location
   tags: {}
   sku: {
@@ -89,4 +78,3 @@ resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2021-04-
     principalType: 'ServicePrincipal'
   }
 }
-

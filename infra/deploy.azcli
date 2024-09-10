@@ -1,12 +1,23 @@
-uniqueStr="FunctionApp-BCE-AI-Solution-02"
 resourceGroupName="POC_BCE-AI-Solution-02"
+ContainerRegistryName="ACRBCEAISolution02"
+FunctionAppName="FunctionApp_BCE-AI-Solution-02"
+StorageAccountName="bceaisolution02function"
+AppServicePlan="ASP-FunctionApp-BCE-AI-Solution-02"
+ContainerRegistryWebHook="WebHookACRBCEAISolution02"
 
+# Create Resource Group (if not already created)
 #az group create --name $resourceGroupName --location australiaeast --tags "Owner"="David Summers"
-#az deployment group create --resource-group $resourceGroupName --template-file createACR.bicep --parameters uniqueStr=${uniqueStr}
 
-az acr login --name ${uniqueStr}acr
-docker build -t ${uniqueStr}acr.azurecr.io/pythonfunc:latest ../
-docker push ${uniqueStr}acr.azurecr.io/pythonfunc:latest
+# Deploy ACR using Bicep
+az deployment group create --resource-group $resourceGroupName --template-file createACR.bicep --parameters containerRegistryName=${ContainerRegistryName}
 
-#az deployment group create --resource-group $resourceGroupName --template-file createInfra.bicep --parameters uniqueStr=${uniqueStr}
-#az functionapp config container set --name ${uniqueStr}app -g $resourceGroupName --image pdf2imgacr.azurecr.io/pythonfunc:latest -r https://pdf2imgacr.azurecr.io
+# Log in to ACR and push the Docker image
+az acr login --name ${ContainerRegistryName}
+docker build -t ${ContainerRegistryName}.azurecr.io/pythonfunc:latest ../
+docker push ${ContainerRegistryName}.azurecr.io/pythonfunc:latest
+
+# Deploy infrastructure including Function App, Storage Account, and App Service Plan
+az deployment group create --resource-group $resourceGroupName --template-file createInfra.bicep --parameters containerRegistryName=${ContainerRegistryName} functionAppName=${FunctionAppName} storageAccountName=${StorageAccountName} appServicePlanName=${AppServicePlan}
+
+# Configure the Function App to use the Docker image
+az functionapp config container set --name ${FunctionAppName} -g $resourceGroupName --image ${ContainerRegistryName}.azurecr.io/pythonfunc:latest --registry-username $(az acr credential show --name ${ContainerRegistryName} --query "username" -o tsv) --registry-password $(az acr credential show --name ${ContainerRegistryName} --query "passwords[0].value" -o tsv)
