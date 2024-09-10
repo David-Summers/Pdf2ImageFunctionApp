@@ -1,5 +1,5 @@
-uniqueStr="omniconverter001"
-resourceGroupName="gen${uniqueStr}rg"
+uniqueStr="FunctionApp-BCE-AI-Solution-02"
+resourceGroupName="POC_BCE-AI-Solution-02"
 
 #az group create --name $resourceGroupName --location australiaeast --tags "Owner"="David Summers"
 #az deployment group create --resource-group $resourceGroupName --template-file createACR.bicep --parameters uniqueStr=${uniqueStr}
