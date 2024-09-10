@@ -1,6 +1,6 @@
 resourceGroupName="POC_BCE-AI-Solution-02"
 ContainerRegistryName="ACRBCEAISolution02"
-FunctionAppName="FunctionApp_BCE-AI-Solution-02"
+FunctionAppName="FunctionApp-BCE-AI-Solution-02"
 StorageAccountName="bceaisolution02function"
 AppServicePlan="ASP-FunctionApp-BCE-AI-Solution-02"
 ContainerRegistryWebHook="WebHookACRBCEAISolution02"
@@ -13,8 +13,8 @@ az deployment group create --resource-group $resourceGroupName --template-file c
 
 # Log in to ACR and push the Docker image
 az acr login --name ${ContainerRegistryName}
-docker build -t ${ContainerRegistryName}.azurecr.io/pythonfunc:latest ../
-docker push ${ContainerRegistryName}.azurecr.io/pythonfunc:latest
+docker build -t acrbceaisolution02.azurecr.io/pythonfunc:latest ../
+docker push acrbceaisolution02.azurecr.io/pythonfunc:latest
 
 # Deploy infrastructure including Function App, Storage Account, and App Service Plan
 az deployment group create --resource-group $resourceGroupName --template-file createInfra.bicep --parameters containerRegistryName=${ContainerRegistryName} functionAppName=${FunctionAppName} storageAccountName=${StorageAccountName} appServicePlanName=${AppServicePlan}
