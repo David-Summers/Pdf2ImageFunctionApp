@@ -46,7 +46,7 @@ def process_file(url, image_container_name, image_connection_string):
     #response = requests.get(url)
     #print(response.content)
 
-    CONTAINER_NAME = "upload"
+    CONTAINER_NAME = "staging"
     blob_name = url.split("/").pop()
 
     blob_service_client = BlobServiceClient.from_connection_string(image_connection_string)
