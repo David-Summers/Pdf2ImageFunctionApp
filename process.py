@@ -20,7 +20,7 @@ def upload_file_to_blob(file_path, container_name, blob_name, connection_string)
     
     # Upload the file
     with open(file_path, "rb") as data:
-        blob_client.upload_blob(data, overwrite=True)
+        blob_client.upload_blob(data, overwrite=True, content_settings={"content_type": "image/jpeg"})
     print(f"File {file_path} uploaded to {container_name}/{blob_name}")
 
 def upload_images_to_blob(images, container_name, connection_string):
