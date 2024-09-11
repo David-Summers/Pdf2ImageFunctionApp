@@ -20,7 +20,7 @@ def upload_file_to_blob(file_path, container_name, blob_name, connection_string)
     
     # Upload the file
     with open(file_path, "rb") as data:
-        blob_client.upload_blob(data, overwrite=True, content_settings={"content_type": "image/jpeg"})
+        blob_client.upload_blob(data, overwrite=True)
     print(f"File {file_path} uploaded to {container_name}/{blob_name}")
 
 def upload_images_to_blob(images, container_name, connection_string):
@@ -43,6 +43,9 @@ def upload_images_to_blob(images, container_name, connection_string):
 
 def process_file(url, image_container_name, image_connection_string):
 
+    #response = requests.get(url)
+    #print(response.content)
+
     CONTAINER_NAME = "upload"
     blob_name = url.split("/").pop()
 
@@ -53,6 +56,10 @@ def process_file(url, image_container_name, image_connection_string):
 
     images = pdf2image.convert_from_bytes(pdf_stream)
 
+    #with open('file.pdf', 'wb') as f:
+    #    f.write(blob_data.content_as_bytes())
+
+    
     upload_images_to_blob(images, image_container_name, image_connection_string)
 
 
