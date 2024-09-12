@@ -4,9 +4,9 @@ import tempfile
 import os
 import sys
 
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, BlobProperties
 
-def upload_file_to_blob(file_path, container_name, blob_name, connection_string):
+def upload_file_to_blob(file_path, container_name, blob_name, connection_string, content_type="application/octet-stream"):
     # Create a BlobServiceClient using the connection string
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
     
@@ -18,10 +18,11 @@ def upload_file_to_blob(file_path, container_name, blob_name, connection_string)
     # Create a BlobClient to interact with the blob
     blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
     
-    # Upload the file
+    # Upload the file and set the Content-Type
     with open(file_path, "rb") as data:
-        blob_client.upload_blob(data, overwrite=True)
-    print(f"File {file_path} uploaded to {container_name}/{blob_name}")
+        blob_client.upload_blob(data, overwrite=True, content_settings=BlobProperties(content_type=content_type))
+    
+    print(f"File {file_path} uploaded to {container_name}/{blob_name} with Content-Type {content_type}")
 
 def upload_images_to_blob(images, container_name, connection_string):
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
@@ -34,34 +35,25 @@ def upload_images_to_blob(images, container_name, connection_string):
         # Define a unique blob name
         blob_name = f"uploaded_image_{index}.jpg"
         
-        # Upload the temporary image file to Azure Blob Storage
-        upload_file_to_blob(temp_image_path, container_name, blob_name, connection_string)
+        # Upload the temporary image file to Azure Blob Storage with the correct Content-Type
+        upload_file_to_blob(temp_image_path, container_name, blob_name, connection_string, content_type="image/jpeg")
         
         # Delete the temporary file
         os.remove(temp_image_path)
-        print(f"Image {index} uploaded to {container_name}/{blob_name}")
+        print(f"Image {index} uploaded to {container_name}/{blob_name} with Content-Type image/jpeg")
 
 def process_file(url, image_container_name, image_connection_string):
-
-    #response = requests.get(url)
-    #print(response.content)
-
     CONTAINER_NAME = "upload"
     blob_name = url.split("/").pop()
 
+    # Get the PDF data from Azure Blob Storage
     blob_service_client = BlobServiceClient.from_connection_string(image_connection_string)
-    blob_client = blob_service_client.get_blob_client(container = CONTAINER_NAME, blob = blob_name)
+    blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
     blob_data = blob_client.download_blob()
     pdf_stream = blob_data.content_as_bytes()
 
+    # Convert the PDF to images
     images = pdf2image.convert_from_bytes(pdf_stream)
 
-    #with open('file.pdf', 'wb') as f:
-    #    f.write(blob_data.content_as_bytes())
-
-    
+    # Upload each image as a JPEG with the correct Content-Type
     upload_images_to_blob(images, image_container_name, image_connection_string)
-
-
-
-
