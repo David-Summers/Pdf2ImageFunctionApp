@@ -1,3 +1,9 @@
+import requests
+import pdf2image  # Make sure to import this library
+import tempfile
+import os
+import sys
+
 from azure.storage.blob import BlobServiceClient, ContentSettings
 
 def upload_file_to_blob(file_path, container_name, blob_name, connection_string, content_type="application/octet-stream"):
