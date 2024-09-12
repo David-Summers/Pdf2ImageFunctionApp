@@ -1,10 +1,4 @@
-import requests
-import pdf2image
-import tempfile
-import os
-import sys
-
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, BlobProperties
+from azure.storage.blob import BlobServiceClient, ContentSettings
 
 def upload_file_to_blob(file_path, container_name, blob_name, connection_string, content_type="application/octet-stream"):
     # Create a BlobServiceClient using the connection string
@@ -20,7 +14,8 @@ def upload_file_to_blob(file_path, container_name, blob_name, connection_string,
     
     # Upload the file and set the Content-Type
     with open(file_path, "rb") as data:
-        blob_client.upload_blob(data, overwrite=True, content_settings=BlobProperties(content_type=content_type))
+        content_settings = ContentSettings(content_type=content_type)  # Correct usage here
+        blob_client.upload_blob(data, overwrite=True, content_settings=content_settings)
     
     print(f"File {file_path} uploaded to {container_name}/{blob_name} with Content-Type {content_type}")
 
